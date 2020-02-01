@@ -1,0 +1,27 @@
+<html> 
+    <head>
+        <title>Tictactoe</title>
+    </head>
+    <body>
+        <h1>Tic Tac Toe</h1>
+
+        <p> {{if .Cwin}} 
+          
+          
+            
+            <a href="/ttt">Return</a>
+
+            {{else}} 
+            <a href="/ttt">Return</a>
+            
+            <form action="/ttt1">      
+                Choose your move! (between 1 and 9):
+                <input type="number" name="quantity" min="1" max="9">
+                <input type="submit" value="Go!"}>
+              </form>
+              
+            {{end}}</p>         
+        </body>
+          
+</html>
+

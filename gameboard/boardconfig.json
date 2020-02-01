@@ -1,0 +1,4 @@
+{
+    "Grid": "./gameboard/gridconfig.txt",
+    "Scalenumber": "./gameboard/scaleconfig.txt" 
+}
