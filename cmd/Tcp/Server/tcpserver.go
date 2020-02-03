@@ -1,14 +1,16 @@
 package main
 
-import "net"
-
-import "fmt"
+import (
+	"fmt"
+	"net"
+)
 
 var ConnSignal chan string = make(chan string)
 var connections []net.Conn
 
 func main() {
-	ln, _ := net.Listen("tcp", ":6060")
+	ln, _ := net.Listen("tcp", ":7777")
+	fmt.Println("Server Listening on Port:7777")
 
 	for {
 		go Session(ln)

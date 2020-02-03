@@ -1,0 +1,9 @@
+proxyhost : localhost
+proxyport : 6060
+servers:
+    - hostname: losthost
+      port: 7777
+    - hostname: localhost
+      port: 8888
+    - hostname: localhost
+      port: 9999
