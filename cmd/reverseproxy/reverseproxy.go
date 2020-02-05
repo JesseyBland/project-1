@@ -21,14 +21,10 @@ type Server struct {
 }
 
 //CONFIG is yaml config
-const CONFIG string = "./cmd/Tcp/Server/net/config.yml"
+const CONFIG string = "config.yml"
 
 // loging server connection
 var logConn net.Conn
-
-func init() {
-
-}
 
 func main() {
 	Proxy := Proxy{}
@@ -44,46 +40,46 @@ func main() {
 	}
 	port := Proxy.Proxyport
 	host := Proxy.Proxyhost
+
+	Servport := Proxy.Servers[0].Port
+
 	fmt.Printf("Proxy Hostname:%v Port:%v", host, port)
 	listener, _ := net.Listen("tcp", ":"+port)
 
 	Cchan := make(chan string)
 	for {
-		go Start(listener, Cchan, port)
+		go Start(listener, Cchan, Servport)
 		<-Cchan
 	}
 
 }
 
 //Start the reverse proxy connection
-func Start(listener net.Listener, Cchan chan string, port string) {
+func Start(listener net.Listener, Cchan chan string, Servport string) {
 	conn, _ := listener.Accept()
-	var serverConn net.Conn = nil
+	var serverConn net.Conn
 	var err error
 	defer conn.Close()
 	Cchan <- "Connection Esablished\n"
 
 	buffer := make([]byte, 1024)
 	conn.Read(buffer)
-	Proxy := Proxy{}
 
 	for {
 
-		for i := range Proxy.Servers {
-			ServerPrint := string(Proxy.Servers[i].Hostname + ":" + Proxy.Servers[i].Port)
-			//if strings.Contains(string(buffer), ServerPrint) {
-			serverConn, err = net.Dial("tcp", ServerPrint)
-			defer serverConn.Close()
-			serverConn.Write(buffer)
-			//}
-			if err != nil {
-			} else { // if error is nil we break out of loop
-				break
-			}
+		serverConn, err = net.Dial("tcp", ":"+Servport)
+		//defer serverConn.Close()
+		serverConn.Write(buffer)
+
+		if err != nil {
+		} else { // if error is nil we break out of loop
+			break
 		}
+
 		if serverConn != nil { // If serverConn was found we break out of forever loop
 			break
 		}
+
 	}
 
 	//New Variable Shutdown a channel with string type
