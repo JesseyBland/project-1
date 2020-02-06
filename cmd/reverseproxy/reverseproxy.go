@@ -21,7 +21,7 @@ type Server struct {
 }
 
 //CONFIG is yaml config
-const CONFIG string = "config.yml"
+const CONFIG string = "../../config.yml"
 
 // loging server connection
 var logConn net.Conn
