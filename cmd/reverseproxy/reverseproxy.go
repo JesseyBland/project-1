@@ -2,10 +2,9 @@ package main
 
 import (
 	"fmt"
+	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"net"
-
-	"gopkg.in/yaml.v2"
 )
 
 //tcpServers filled with our yaml config
@@ -21,12 +20,15 @@ type Server struct {
 }
 
 //CONFIG is yaml config
-const CONFIG string = "../../config.yml"
+const CONFIG string = "config.yml"
 
 // loging server connection
-var logConn net.Conn
+var ConnTrace net.Conn
 
 func main() {
+
+	var err error
+
 	Proxy := Proxy{}
 
 	file, err := ioutil.ReadFile(CONFIG)
@@ -59,7 +61,7 @@ func Start(listener net.Listener, Cchan chan string, Servport string) {
 	conn, _ := listener.Accept()
 	var serverConn net.Conn
 	var err error
-	defer conn.Close()
+	// defer conn.Close()
 	Cchan <- "Connection Esablished\n"
 
 	buffer := make([]byte, 1024)
@@ -68,7 +70,7 @@ func Start(listener net.Listener, Cchan chan string, Servport string) {
 	for {
 
 		serverConn, err = net.Dial("tcp", ":"+Servport)
-		//defer serverConn.Close()
+
 		serverConn.Write(buffer)
 
 		if err != nil {
@@ -81,42 +83,45 @@ func Start(listener net.Listener, Cchan chan string, Servport string) {
 		}
 
 	}
-
-	//New Variable Shutdown a channel with string type
-	Shutdown := make(chan string)
+	go connTrace()
 	//New Variable InboundMessages a channel with string type
 	InboundMessages := make(chan string)
 	//New Variable OutboundMessages a channel with string type
 	OutboundMessages := make(chan string)
+	in := "INBOUND"
+	out := "OUTBOUND"
+	ins := "INBOUND SERVER"
+	outs := "OUTBOUND SERVER"
 
-	go Writer(conn, OutboundMessages, Shutdown)
+	go Writer(conn, OutboundMessages, out)
 
-	go Writer(serverConn, InboundMessages, Shutdown)
+	go Writer(serverConn, InboundMessages, ins)
 
-	go Listener(serverConn, OutboundMessages, Shutdown)
+	go Listener(serverConn, OutboundMessages, outs)
 
-	go Listener(conn, InboundMessages, Shutdown)
-	// <- shutdown used to keep the forever loop from continually making go routines. A block
-	<-Shutdown
+	go Listener(conn, InboundMessages, in)
+
+	<-InboundMessages
 
 }
 
-func Writer(Conn1 net.Conn, messages chan string, shutdown chan string) {
+func Writer(Conn1 net.Conn, messages chan string, in string) {
 
 	for {
 		//Set your channel message value as new message
 		NewMessage := <-messages
 		// If loging server exsists
-		if logConn != nil {
+		if ConnTrace != nil {
 			//log new messeage
-			logConn.Write([]byte(NewMessage))
+			x := NewMessage + " " + in
+			ConnTrace.Write([]byte(x))
 		}
 		//Write channle set to connection passed in
 		Conn1.Write([]byte(NewMessage))
 	}
 }
 
-func Listener(Conn1 net.Conn, messages chan string, shutdown chan string) {
+func Listener(Conn1 net.Conn, messages chan string, out string) {
 	//Forever establish a reading connection
 	for {
 		//Create a Buffer with a meg size
@@ -131,13 +136,30 @@ func Listener(Conn1 net.Conn, messages chan string, shutdown chan string) {
 			break
 		}
 		//if logging server exsists
-		if logConn != nil {
+		if ConnTrace != nil {
 			// log message
-			logConn.Write(buf)
+			x := string(buf) + " " + out + "  "
+			ConnTrace.Write([]byte(x))
+
 		}
 		//Send the buffer to message channle esablishing Read channel.
 		messages <- string(buf)
 	}
-	//Server shutdown.
-	shutdown <- "Connection Closed"
+
+}
+
+func connTrace() {
+	var err error
+	for {
+		ConnTrace, err = net.Dial("tcp", ":3333")
+
+		if err == nil {
+			break
+		}
+
+		if ConnTrace != nil {
+			break
+		}
+
+	}
 }

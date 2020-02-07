@@ -1,1 +1,0 @@
-./cmd/firewall/firewall
