@@ -3,11 +3,11 @@ package main
 import (
 	"bytes"
 	"fmt"
-	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"log"
-	"net"
 	"os/exec"
+
+	"gopkg.in/yaml.v2"
 )
 
 //Proxy server + backend tcpServers
@@ -24,7 +24,7 @@ type Server struct {
 }
 
 //CONFIG is yaml config
-const CONFIG string = "config.yml"
+const CONFIG string = "./config.yml"
 
 func loadConfig(path string) ([]Server, error) {
 	c := Proxy{}
