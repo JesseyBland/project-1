@@ -1,6 +1,6 @@
-docker run -it --name=rp1 -p 6060:6060 -d rp 
-docker run -it --name=lb1 -p 6061:6061 -d lb 
-docker run -it --name=ct1 -p 3333:3333 -d ct 
+docker run -it --name=rp1 --net=host -p 6060:6060 -d rp 
+docker run -it --name=lb1 --net=host -p 6061:6061 -d lb 
+docker run -it --name=ct1 --net=host -p 3333:3333 -d ct 
 
 docker stop rp1 &
 docker stop lb1 &
