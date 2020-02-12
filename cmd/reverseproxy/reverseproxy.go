@@ -2,15 +2,20 @@ package main
 
 import (
 	"fmt"
-	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"net"
+
+	"gopkg.in/yaml.v2"
 )
 
 //tcpServers filled with our yaml config
 type Proxy struct {
 	Proxyhost string
 	Proxyport string
+	Loadhost  string
+	Loadport  string
+	Chost     string
+	Cport     string
 	Servers   []Server
 }
 
@@ -42,7 +47,7 @@ func main() {
 	}
 	port := Proxy.Proxyport
 	host := Proxy.Proxyhost
-
+	cport := Proxy.Cport
 	Servport := Proxy.Servers[0].Port
 
 	fmt.Printf("Proxy Hostname:%v Port:%v", host, port)
@@ -50,14 +55,14 @@ func main() {
 
 	Cchan := make(chan string)
 	for {
-		go Start(listener, Cchan, Servport)
+		go Start(listener, Cchan, Servport, cport)
 		<-Cchan
 	}
 
 }
 
 //Start the reverse proxy connection
-func Start(listener net.Listener, Cchan chan string, Servport string) {
+func Start(listener net.Listener, Cchan chan string, Servport string, cport string) {
 	conn, _ := listener.Accept()
 	var serverConn net.Conn
 	var err error
@@ -83,7 +88,7 @@ func Start(listener net.Listener, Cchan chan string, Servport string) {
 		}
 
 	}
-	go connTrace()
+	go connTrace(cport)
 	//New Variable InboundMessages a channel with string type
 	InboundMessages := make(chan string)
 	//New Variable OutboundMessages a channel with string type
@@ -147,11 +152,11 @@ func Listener(Conn1 net.Conn, messages chan string, out string) {
 	}
 
 }
-
-func connTrace() {
+func connTrace(cport string) {
 	var err error
+
 	for {
-		ConnTrace, err = net.Dial("tcp", ":3333")
+		ConnTrace, err = net.Dial("tcp", ":"+cport)
 
 		if err == nil {
 			break

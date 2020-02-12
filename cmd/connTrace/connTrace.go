@@ -2,17 +2,56 @@ package main
 
 import (
 	"fmt"
+	"io/ioutil"
 	"net"
 	"time"
+
+	"gopkg.in/yaml.v2"
 )
+
+//CONFIG is yaml config
+const CONFIG string = "config.yml"
 
 var ConnSignal chan string = make(chan string)
 var LogConn net.Conn
 
-func main() {
+//tcpServers filled with our yaml config
+type Proxy struct {
+	Proxyhost string
+	Proxyport string
+	Loadhost  string
+	Loadport  string
+	Chost     string
+	Cport     string
+	Servers   []Server
+}
 
-	port := ":3333"
-	ln, _ := net.Listen("tcp", port)
+type Server struct {
+	Hostname string
+	Port     string
+}
+
+// loging server connection
+var ConnTrace net.Conn
+
+func main() {
+	Proxy := Proxy{}
+
+	file, err := ioutil.ReadFile(CONFIG)
+	if err != nil {
+		panic(err)
+	}
+
+	err = yaml.Unmarshal([]byte(file), &Proxy)
+	if err != nil {
+		panic(err)
+	}
+	//conntrace port pulled from config.yml
+	cport := Proxy.Cport
+
+	//Cycling through servers to save the ports to Servports
+
+	ln, _ := net.Listen("tcp", ":"+cport)
 	fmt.Printf("ConnTrace Status: UP\n")
 
 	for {

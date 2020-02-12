@@ -3,3 +3,4 @@ loadbalancer.bin
 reverseproxy.bin
 setup.sh
 firewall.bin
+docker-compose.yml

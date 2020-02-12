@@ -14,6 +14,10 @@ import (
 type Proxy struct {
 	Proxyhost string
 	Proxyport string
+	Loadhost  string
+	Loadport  string
+	Chost     string
+	Cport     string
 	Servers   []Server
 }
 
@@ -24,7 +28,7 @@ type Server struct {
 }
 
 //CONFIG is yaml config
-const CONFIG string = "./config.yml"
+const CONFIG string = "config.yml"
 
 func loadConfig(path string) ([]Server, error) {
 	c := Proxy{}

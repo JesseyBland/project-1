@@ -1,5 +1,9 @@
 proxyhost : localhost
 proxyport : 6060
+loadhost: localhost
+loadport: 6061
+chost: localhost
+cport: 3333
 servers:
     - hostname: localhost
       port: 7777

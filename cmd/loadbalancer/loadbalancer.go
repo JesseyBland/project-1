@@ -2,17 +2,22 @@ package main
 
 import (
 	"fmt"
-	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"math/rand"
 	"net"
 	"time"
+
+	"gopkg.in/yaml.v2"
 )
 
 //tcpServers filled with our yaml config
 type Proxy struct {
 	Proxyhost string
 	Proxyport string
+	Loadhost  string
+	Loadport  string
+	Chost     string
+	Cport     string
 	Servers   []Server
 }
 
@@ -40,8 +45,9 @@ func main() {
 		panic(err)
 	}
 	//Proxy Hostname and Port set to port and host
-	port := Proxy.Proxyport
-	host := Proxy.Proxyhost
+	port := Proxy.Loadport
+	host := Proxy.Loadhost
+	cport := Proxy.Cport
 
 	//Cycling through servers to save the ports to Servports
 	var Servports []string
@@ -58,14 +64,14 @@ func main() {
 	for {
 		Servport := loadBalancer(Servports, Servhosts)
 
-		go Start(listener, Cchan, Servport)
+		go Start(listener, Cchan, Servport, cport)
 		<-Cchan
 	}
 
 }
 
 //Start the reverse proxy connection
-func Start(listener net.Listener, Cchan chan string, Servport string) {
+func Start(listener net.Listener, Cchan chan string, Servport string, cport string) {
 	conn, _ := listener.Accept()
 	var serverConn net.Conn
 	var err error
@@ -93,14 +99,14 @@ func Start(listener net.Listener, Cchan chan string, Servport string) {
 		}
 
 	}
-	go connTrace()
+	go connTrace(cport)
 	//New Variable InboundMessages a channel with string type
 	InboundMessages := make(chan string)
 	//New Variable OutboundMessages a channel with string type
 	OutboundMessages := make(chan string)
 	//Traffic direction variables for logs
-	in := "INBOUND READ"
-	out := "OUTBOUND WRITE"
+	in := "INBOUND"
+	out := "OUTBOUND"
 	ins := "INBOUND SERVER"
 	outs := "OUTBOUND SERVER"
 
@@ -175,10 +181,11 @@ func loadBalancer(Servports, Servhosts []string) string {
 
 }
 
-func connTrace() {
+func connTrace(cport string) {
 	var err error
+
 	for {
-		ConnTrace, err = net.Dial("tcp", ":3333")
+		ConnTrace, err = net.Dial("tcp", ":"+cport)
 
 		if err == nil {
 			break
